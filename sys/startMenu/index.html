@@ -1,0 +1,98 @@
+<start-menu class="bg-light">
+	<profile-section class="bg-light p-1">
+		<profile-name class="lead">atomOS</profile-name>
+		<atomos-version>
+			<div class="btn-group btn-group-sm float-right">
+				<button type="button" class="btn btn-danger" style="line-height:1.1" onclick="atomos.shutdown()"
+								data-toggle="tooltip" data-placement="bottom" title="Close all apps and turn off PC"><i class="material-icons">power_settings_new</i> Shut down</button>
+				<button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-toggle="dropdown"
+								aria-haspopup="true" aria-expanded="false">
+					<span class="sr-only">Toggle Dropdown</span>
+				</button>
+				<div class="dropdown-menu">
+					<a class="dropdown-item" onclick="atomos.suspend()" href="#"
+						 data-toggle="tooltip" data-placement="right" title="Leave everything and sleep">Suspend</a>
+					<a class="dropdown-item" onclick="atomos.lock()" href="#"
+						 data-toggle="tooltip" data-placement="right" title="Leave everything and go to login screen">Lock</a>
+					<a class="dropdown-item" onclick="atomos.stopx()" href="#"
+						 data-toggle="tooltip" data-placement="right" title="Close all apps and go to login screen">Log out</a>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" onclick="atomos.reboot()" href="#"
+						 data-toggle="tooltip" data-placement="right" title="Close all apps and restart PC">Restart</a>
+					<a class="dropdown-item" onclick="atomos.shutdown()" href="#"
+						 data-toggle="tooltip" data-placement="right" title="Close all apps and turn off PC">Shut down</a>
+				</div>
+			</div>
+		</atomos-version>
+	</profile-section>
+	<div class="panel">
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="folders">
+				<a href="#" onclick="window.new('aos-files',{path: app.getPath('documents')})"
+					 class="list-item btn btn-light">
+					<img data-icon="Documents Folder">
+					<name>Documents</name>
+					<br>
+					<description>Work with all your documents in one folder</description>
+				</a>
+				<a href="#" onclick="window.new('aos-files',{path: app.getPath('music')})" class="list-item btn btn-light">
+					<img data-icon="Music Folder">
+					<name>Music</name>
+					<br>
+					<description>Listen to the music from one location</description>
+				</a>
+				<a href="#" onclick="window.new('aos-files',{path: app.getPath('pictures')})" class="list-item btn btn-light">
+					<img data-icon="Pictures Folder">
+					<name>Pictures</name>
+					<br>
+					<description>View your photos here</description>
+				</a>
+				<a href="#" onclick="window.new('aos-files',{path: app.getPath('videos')})" class="list-item btn btn-light">
+					<img data-icon="Movies Folder">
+					<name>Videos</name>
+					<br>
+					<description>See all your movies available locally</description>
+				</a>
+				<hr/>
+				<a href="#" onclick="window.new('aos-files',{path: app.getPath('home')})" class="list-item btn btn-light">
+					<img data-icon="User Folder">
+					<name>Home</name>
+					<br>
+					<description>All your storage lays here</description>
+				</a>
+				<a href="#" onclick="window.new('aos-files',{path: '/'})" class="list-item btn btn-light">
+					<img data-icon="Binder">
+					<name>Root</name>
+					<br>
+					<description>The whole system is yours, be careful!</description>
+				</a>
+			</div>
+			<div role="tabpanel" class="tab-pane" id="applications"></div>
+		</div>
+	</div>
+	<div class="nav nav-pills nav-fill" role="tablist">
+		<a href="#folders" class="nav-link active nav-item" aria-controls="home" role="tab" data-toggle="tab"
+			 data-placement="top" title="Quick file-system access">Folders</a>
+		<a href="#applications" class="nav-link nav-item" aria-controls="messages" role="tab" data-toggle="tab"
+			 data-placement="top" title="All installed apps">Applications</a>
+	</div>
+</start-menu>
+<script>
+	const app = require("electron").remote.app;
+	window.$ = window.jQuery = require("jquery");
+	$("body").append("<link href=\"" + app.getAppPath() + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	require("atomos-framework");
+	const atomos = require("./index");
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip({
+			trigger: 'hover',
+			delay: 500
+		});
+		$('[data-toggle="tab"]').tooltip({
+			trigger: 'hover',
+			delay: 500
+		})
+	})
+</script>
