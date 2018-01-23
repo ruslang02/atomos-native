@@ -140,7 +140,7 @@
 		location.hash = "installed";
 		if (win.getParentWindow()) win.getParentWindow().webContents.send("stdout", "Installed.");
 		$(".btn-primary").click(function() {
-			window.new(appDir).then(window.close);
+			new Window(appDir).then(window.close);
 		})
 	}
 
@@ -166,7 +166,7 @@
 			if (path.extname(fPath) === ".wapp") InstallApp(fPath)
 		});
 		$("#main").click(function () {
-			window.new("aos-files", {
+			new Window("aos-files", {
 				action: "open"
 			}, {
 				modal: true,

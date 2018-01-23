@@ -105,7 +105,7 @@
 				})
 			} else {
 				if (command.startsWith("sudo")) {
-					window.new(command.substring(0, (command.indexOf(" ") !== -1 ? command.indexOf(
+					new Window(command.substring(0, (command.indexOf(" ") !== -1 ? command.indexOf(
 							" ") : Infinity)).trim(), {
 						command: command.substring(command.indexOf(" ")).trim(),
 						cwd: $("cwd input").val().trim(),
@@ -117,7 +117,7 @@
 					});
 					ipcRenderer.removeListener("return-sudo", returnSudo);
 					ipcRenderer.on("return-sudo", returnSudo)
-				} else window.new(command.substring(0, (command.indexOf(" ") !== -1 ?
+				} else new Window(command.substring(0, (command.indexOf(" ") !== -1 ?
 						command.indexOf(" ") : Infinity)).trim(), command.substring(command.indexOf(
 						" ")).trim(), {parent: remote.getCurrentWindow()})
 			}

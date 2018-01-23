@@ -31,7 +31,7 @@
 	};
 
 	function add() {
-		window.new("sudo", {
+		new Window("sudo", {
 			command: "date --set=\"" + document.querySelector("input").value + "\"",
 			win: win.id,
 			title: "Authentication is needed to modify system time"

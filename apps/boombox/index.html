@@ -1,3 +1,4 @@
+<meta name="theme-color" content="hsl(33, 100%, 50%)">
 <script>
 	const {
 		remote,
@@ -254,7 +255,7 @@
 
 
 		$("[data-key='Ctrl+O']").click(function() {
-			window.new("aos-files", {
+			new Window("aos-files", {
 				action: "open",
 				path: ofdDefaultPath,
 				title: "Find your music",
@@ -267,7 +268,7 @@
 		});
 
 		$("[data-key='Ctrl+S']").click(function() {
-			window.new("aos-files", {
+			new Window("aos-files", {
 				action: "save",
 				path: ofdDefaultPath,
 				title: "Where to save the playlist?",

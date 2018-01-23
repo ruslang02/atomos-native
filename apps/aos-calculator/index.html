@@ -30,9 +30,8 @@
 </style>
 
 <script>
-require('atomos-framework');
+const win = require('atomos-framework').window;
 let res = document.querySelector(".form-control");
-const win = require("electron").remote.getCurrentWindow();
 window.onload = function() {
   document.querySelector(".btn-secondary").addEventListener("click", function() {
 	  res.focus();
@@ -54,7 +53,9 @@ window.onload = function() {
     res.value = "";
   });
   setTimeout(function() {
-	  win.setContentSize(win.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+    win.getSize().then(function(size) {
+      win.setSize(size.width, Math.ceil(document.body.offsetHeight));
+    })
   }, 100);
 };
   function calc() {

@@ -25,7 +25,7 @@
 	</div>
 	<div class="btn-group ml-1 btn-group-sm">
 		<button class="btn btn-outline-primary material-icons" style="display:none; z-index:10000;" onclick='
-						window.new("/createFolder", {
+						new Window("/createFolder", {
 							path: fm.path
 						}, {
 							modal: true,
@@ -203,7 +203,7 @@
 		navigate($(this).attr("data-location"));
 	}).on("dblclick", "[type=folder]", function () {
 		if (!fm.desktop) navigate($(this).attr("data-location"));
-		else window.new("aos-files", {
+		else new Window("aos-files", {
 			path: $(this).attr("data-location")
 		})
 	}).on("mouseup", "[type]", function () {
@@ -295,7 +295,7 @@
 
 	function mountDrive(mountDir, device) {
 		if (process.platform === "win32") return;
-		window.new("sudo", {
+		new Window("sudo", {
 			command: "mkdir -p '" + mountDir + "'; mount " + device + " '" + mountDir +
 			"'",
 			win: fm.window.id,
@@ -319,7 +319,7 @@
 		fs.mkdirs(path)
 				.then(reNavigate)
 				.catch(function () {
-					window.new("sudo", {
+					new Window("sudo", {
 						command: "mkdir -p '" + path + "'"
 					});
 					ipcRenderer.on("return-sudo", function (e, res) {
@@ -419,7 +419,7 @@
 								"'><div class='file-title'>" + shrt.title + "</div></button>");
 						$(".files .file-item").last().on("dblclick", function (e) {
 							if (!fm.action) e.stopImmediatePropagation();
-							window.new(shrt.app, shrt.args || {});
+							new Window(shrt.app, shrt.args || {});
 						})
 					}
 				} else if(fm.action !== "ffd") $("div.files").append(
@@ -601,7 +601,7 @@
 				fs.remove(options.file).then(reNavigate);
 				break;
 			case "properties":
-				window.new("properties", {
+				new Window("properties", {
 					path: (options ? options.file : fm.path)
 				});
 				break;
@@ -685,12 +685,12 @@
 				submenu: [{
 					label: "New Window",
 					click() {
-						window.new("aos-files", {path: fm.path})
+						new Window("aos-files", {path: fm.path})
 					}
 				}, {
 					label: "Terminal",
 					click() {
-						window.new("ash", {path: fm.path})
+						new Window("ash", {path: fm.path})
 					}
 				}]
 			}, {
@@ -785,7 +785,7 @@
 				label: "Next wallpaper",
 				visible: fm.desktop && aclock,
 				click() {
-					window.new("aclockwallpaper", {autostart: true}, {
+					new Window("aclockwallpaper", {autostart: true}, {
 						show: false,
 						showOnLoad: false,
 						skipTaskbar: true,
@@ -799,7 +799,7 @@
 				submenu: [{
 					label: "File",
 					click() {
-						window.new("aos-cabinet/createFile", {
+						new Window("aos-cabinet/createFile", {
 							path: fm.path
 						}, {
 							modal: true,
@@ -810,7 +810,7 @@
 				}, {
 					label: "Folder",
 					click() {
-						window.new("aos-cabinet/createFolder", {
+						new Window("aos-cabinet/createFolder", {
 							path: fm.path
 						}, {
 							modal: true,
@@ -829,7 +829,7 @@
 				label: "Desktop Preferences",
 				visible: fm.desktop,
 				click() {
-					window.new("control", {section: "Desktop Preferences"})
+					new Window("control", {section: "Desktop Preferences"})
 				}
 			}];
 			fm.filesMenu = Menu.buildFromTemplate(fmMenu);
@@ -863,7 +863,7 @@
 					label: "Open in...",
 					visible: !($this.attr("type") === "folder"),
 					click() {
-						window.new("aos-appchooserdialog", {
+						new Window("aos-appchooserdialog", {
 							path: file,
 							extension: extension
 						})
@@ -875,13 +875,13 @@
 					label: 'Install',
 					visible: file.endsWith(".wapp"),
 					click() {
-						window.new("install", {path: file});
+						new Window("install", {path: file});
 					}
 				}, {
 					label: 'Extract to...',
 					visible: file.endsWith(".zip") || file.endsWith(".tar.gz") || file.endsWith(".tgz"),
 					click() {
-						window.new("aos-files", {
+						new Window("aos-files", {
 							path: fm.path,
 							action: "folder",
 							title: "Choose extraction directory...",

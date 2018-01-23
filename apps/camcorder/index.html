@@ -88,7 +88,7 @@ right: 0;
       }
     })
       document.querySelector(".btn-success").addEventListener("click", function() {
-        window.new("camcorder", {capture: true})
+        new Window("camcorder", {capture: true})
         .then(function() {
           app.close();
         })
@@ -128,7 +128,7 @@ right: 0;
               new Notification({
                 title: "Snapshot has been successfully taken",
                 body: "<hr><div class='text-right'><button class='btn btn-sm btn-secondary' onclick='require(\"electron\").remote.BrowserWindow.fromId(" + app.id +
-                  ").webContents.send(\"copy-image\")'><i class='material-icons'>bookmark</i>Copy to Clipboard</button><button class='btn btn-sm btn-primary ml-2' onclick='window.new(\"aos-files\", {path: \"" + pth.substring(0, pth.lastIndexOf("/")) +
+                  ").webContents.send(\"copy-image\")'><i class='material-icons'>bookmark</i>Copy to Clipboard</button><button class='btn btn-sm btn-primary ml-2' onclick='new Window(\"aos-files\", {path: \"" + pth.substring(0, pth.lastIndexOf("/")) +
                   "\"})'><i class='material-icons'>folder</i> Show in Cabinet</button></div>",
                 color: "#28a745",
                 icon: "camera"

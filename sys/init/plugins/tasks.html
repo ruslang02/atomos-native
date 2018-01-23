@@ -1,13 +1,11 @@
 <tasks class="mx-2" style="flex-grow:2"></tasks>
 <script>
-app.on('browser-window-created', function(event, win) {
+app.on('web-contents-created', function(event, win) {
 	console.log(win);
-  if(win.webContents.browserWindowOptions.skipTaskbar === true) return;
   let dangerFlash;
   let hangWin;
   let alreadyHung = false;
   let icon;
-  $("tasks").append("<button id='" + win.id + "' class='btn btn-light btn-sm loading'><img src='file://" + app.getAppPath() + "/icons/Loader.png'></button>");
   let $task = $("tasks #" + win.id);
   $task.on('mousedown', function(e) {
     e.preventDefault();
@@ -21,7 +19,7 @@ app.on('browser-window-created', function(event, win) {
   		click() {
   			let url = win.getURL();
   			url = url.substring(url.lastIndexOf("/",url.length - "/index.html".length - 1) + 1, url.lastIndexOf("/"));
-  			window.new(url)
+  			new Window(url)
   		}
   	}, {type: 'separator'}, {
   		label: "Close",
@@ -37,6 +35,58 @@ app.on('browser-window-created', function(event, win) {
 	win.webContents.on('will-navigate', ev => {
 		ev.preventDefault()
 	});
+	win.webContents.on("context-menu", function(event, params) {
+		if (params.inputFieldType !== "none") {
+			var cmenu = [{
+				label: "Undo",
+				accelerator: "CmdOrCtrl+Z",
+				click() {
+					win.webContents.send("return-menu", "__undo")
+				},
+				disabled: !params.editFlags.canUndo
+			}, {
+				label: "Redo",
+				accelerator: "CmdOrCtrl+Shift+Z",
+				click() {
+					win.webContents.send("return-menu", "__redo")
+				},
+				disabled: !params.editFlags.canRedo
+			}, {
+				type: "separator"
+			}, {
+				label: "Cut",
+				accelerator: "CmdOrCtrl+X",
+				click() {
+					win.webContents.send("return-menu", "__cut")
+				},
+				disabled: !params.editFlags.canCut
+			}, {
+				label: "Copy",
+				accelerator: "CmdOrCtrl+C",
+				click() {
+					win.webContents.send("return-menu", "__copy")
+				},
+				disabled: !params.editFlags.canCopy
+			}, {
+				label: "Paste",
+				accelerator: "CmdOrCtrl+V",
+				click() {
+					win.webContents.send("return-menu", "__paste")
+				},
+				disabled: !params.editFlags.canPaste
+			}, {
+				type: "separator"
+			}, {
+				label: "Select all",
+				accelerator: "CmdOrCtrl+A",
+				click() {
+					win.webContents.send("return-menu", "__select all")
+				},
+				disabled: !params.editFlags.canSelectAll
+			}];
+			var menu = new Menu.buildFromTemplate(cmenu).popup(win)
+		}
+	})
   win.on('close', function() {
     $task.hide();
   });
@@ -55,14 +105,14 @@ app.on('browser-window-created', function(event, win) {
 	win.webContents.on('new-window', function(e, url, frame, dispos, opts, adds) {
 		console.log(e, url, frame, dispos, opts, adds);
 		if(dispos === "new-window") {
-			window.new("aos-files", {
+			new Window("aos-files", {
 				action: "save"
 			})
 		}
 	});
   win.on('unresponsive', function() {
     if(!alreadyHung) {
-      hangWin = window.new('aos-process-hang', {
+      hangWin = new Window('aos-process-hang', {
         wid: win.id
       }, {modal: true, parent: win});
       dangerFlash = setInterval(function() {

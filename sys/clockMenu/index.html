@@ -1,4 +1,4 @@
-<clock-menu class="bg-light border border-dark card">
+<clock-menu class="bg-light border border-dark card" style="right:0">
 	<div class="card-body text-right float-right">
 		<h1 class="display-3" data-value="clock">21:39<br></h1>
 		<h4 data-value="date">21 September 2017</h4></div>
@@ -8,7 +8,7 @@
 			<input title class="form-control" oninput="changeVolume(this)" type="range">
 			<i class="material-icons md-18">volume_up</i>
 		</div>
-		<button type="button" class="list-group-item list-group-item-action" onclick="window.new('control')">Settings
+		<button type="button" class="list-group-item list-group-item-action" onclick="new Window('control')">Settings
 		</button>
 	</div>
 </clock-menu>
@@ -24,7 +24,6 @@
 	} = remote;
 	window.jQuery = window.$ = require("jquery");
 	const win = remote.getCurrentWindow();
-	$("body").append("<link href=\"" + app.getAppPath() + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
 	win.on("blur", function() {
 		clearInterval(clock);
 	});
@@ -40,8 +39,4 @@
 	function changeVolume(element) {
 		proc.spawn("amixer", ["sset", "Master", element.value + "%"]);
 	}
-
-
-
-
 </script>

@@ -1,0 +1,276 @@
+<body>
+  <link rel="stylesheet" href="index.css" />
+  <webview nodeintegration src="../../apps/aos-cabinet/index.html"></webview>
+  <nav-bar class="navbar navbar-expand-xs navbar-light bg-light navbar navbar-default fixed-bottom dropup"></nav-bar>
+  <script>
+    const fs = require('fs-extra');
+    const {
+      remote,
+      ipcRenderer,
+      screen
+    } = require("electron");
+    const {
+      app,
+      BrowserWindow,
+      Menu,
+      ipcMain
+    } = remote;
+    const {
+      width,
+      height,
+      x,
+      y
+    } = screen.getPrimaryDisplay().bounds;
+    const win = remote.getCurrentWindow();
+    const wc = remote.getCurrentWebContents();
+    window.jQuery = window.$ = require("jquery");
+    $.getScript(app.getAppPath() + "/node_modules/jquery-ui-npm/jquery-ui.min.js");
+    require('bootstrap');
+    $("nav-bar").contextmenu(function(e) {
+      e.preventDefault();
+      Menu.buildFromTemplate([{
+        label: "Taskbar Settings",
+        click() {
+          new Window("control", {
+            section: "Taskbar"
+          })
+        }
+      }]).popup(win)
+    });
+    require("atomos-framework");
+    require("./index");
+    ipcRenderer.on("new-window", function(event, args) {
+      let winButtons = [];
+      if (args.options.minimizable) winButtons.push($("<button></button>", {
+        class: 'material-icons',
+        text: 'expand_more',
+        click: function() {
+          $window.hide("fade", 200);
+        }
+      }));
+      if (args.options.maximizable) winButtons.push($("<button></button>", {
+        class: 'material-icons',
+        text: 'expand_less',
+        click: function() {
+
+        }
+      }));
+      if (args.options.closable) winButtons.push($("<button></button>", {
+        class: 'material-icons',
+        text: 'close',
+        click: function() {
+          $window.hide("fade", 200, function() {
+            $window.remove();
+            $task.remove();
+          })
+        }
+      }));
+      let $webview = $("<webview></webview>", {
+        nodeintegration: true,
+        src: args.url
+      });
+      let webview = $webview[0];
+      let $window = $("<window></window>", {
+        css: {
+          width: args.options.width,
+          height: args.options.height,
+          minWidth: args.options.minWidth,
+          minHeight: args.options.minHeight,
+          visibility: "hidden"
+        },
+        html: [
+          $("<window-header></window-header>", {
+            html: [
+              $("<window-title></window-title>", {
+                text: args.options.title
+              }),
+              $("<window-buttons></window-buttons>", {
+                html: winButtons
+              })
+            ]
+          }),
+          $webview
+        ]
+      })
+      let $task = $("<button></button>", {
+        class: 'btn btn-light btn-sm loading',
+        html: $("<img />", {
+          src: "file://" + app.getAppPath() + "/icons/Loader.png"
+        }),
+        click: function() {
+          $window.show("slide", {
+            direction: "up"
+          }, 200);
+        },
+        contextmenu: function() {
+          Menu.buildFromTemplate([{
+            label: "New instance",
+            click() {
+              let url = win.getURL();
+              url = url.substring(url.lastIndexOf("/", url.length - "/index.html".length - 1) + 1, url.lastIndexOf("/"));
+              new Window(url)
+            }
+          }, {
+            type: 'separator'
+          }, {
+            label: "Close",
+            click() {
+              win.close()
+            }
+          }]).popup()
+        }
+      })
+      $("body").append($window);
+      $("tasks").append($task);
+      if (args.options.show) $window.css({
+        visibility: "visible",
+        display: "none"
+      }).show("fade", 200);
+      let loaded = false;
+      if (args.options.movable) $window.draggable({
+        cancel: "webview, button",
+        start: function() {
+          $("window").removeClass("active");
+          $window.addClass("active");
+        },
+        stop: function() {
+          $("window").removeClass("active");
+          $window.addClass("active");
+        }
+      });
+      if (args.options.resizable) $window.resizable({
+        handles: "s,sw,se,e,w,n,nw,ne",
+        start: function() {
+          $window.css("z-index", (parseInt($("window.active").css("z-index")) || 1) + 1);
+          $("window").removeClass("active");
+          $window.addClass("active");
+        },
+        stop: function() {
+          $window.css("z-index", (parseInt($("window.active").css("z-index")) || 1) + 1);
+          $("window").removeClass("active");
+          $window.addClass("active");
+        }
+      });
+      $window.mousedown(function() {
+        $window.css("z-index", (parseInt($("window.active").css("z-index")) || 1) + 1);
+        $("window").removeClass("active");
+        $window.addClass("active");
+      })
+      if (args.options.showOnLoad) {
+        webview.addEventListener("did-stop-loading", function() {
+          if (!loaded) {
+            $task.find("img").attr("src", args.options.icon).parent().removeClass("loading");
+            $window.css({
+              visibility: "visible",
+              display: "none"
+            }).show("fade", 200);
+            loaded = true;
+            console.log("loaded");
+          }
+        })
+      }
+      webview.addEventListener('new-window', function(e, url, frame, dispos, opts, adds) {
+        console.log(e, url, frame, dispos, opts, adds);
+        if (dispos === "save-to-disk") {
+          new Window("aos-files", {
+            action: "save"
+          })
+        }
+      });
+      webview.addEventListener("did-start-loading", function() {
+        let id = webview.getWebContents().id;
+        $task.data("id", id);
+        let setargs = {
+          id: id,
+          args: args.arguments
+        };
+        ipcRenderer.send("set-arguments", setargs);
+      })
+      webview.addEventListener('will-navigate', ev => {
+        ev.preventDefault()
+      });
+      webview.addEventListener('close', function() {
+        $window.hide("fade", 200, function() {
+          $window.remove();
+          $task.remove();
+        })
+      });
+      webview.addEventListener('did-change-theme-color', function(e) {
+        $window.css("background-color", e.themeColor);
+      });
+      webview.addEventListener("context-menu", function(event, params) {
+        if (params.inputFieldType !== "none") {
+          var cmenu = [{
+            label: "Undo",
+            accelerator: "CmdOrCtrl+Z",
+            click() {
+              win.webContents.send("return-menu", "__undo")
+            },
+            disabled: !params.editFlags.canUndo
+          }, {
+            label: "Redo",
+            accelerator: "CmdOrCtrl+Shift+Z",
+            click() {
+              win.webContents.send("return-menu", "__redo")
+            },
+            disabled: !params.editFlags.canRedo
+          }, {
+            type: "separator"
+          }, {
+            label: "Cut",
+            accelerator: "CmdOrCtrl+X",
+            click() {
+              win.webContents.send("return-menu", "__cut")
+            },
+            disabled: !params.editFlags.canCut
+          }, {
+            label: "Copy",
+            accelerator: "CmdOrCtrl+C",
+            click() {
+              win.webContents.send("return-menu", "__copy")
+            },
+            disabled: !params.editFlags.canCopy
+          }, {
+            label: "Paste",
+            accelerator: "CmdOrCtrl+V",
+            click() {
+              win.webContents.send("return-menu", "__paste")
+            },
+            disabled: !params.editFlags.canPaste
+          }, {
+            type: "separator"
+          }, {
+            label: "Select all",
+            accelerator: "CmdOrCtrl+A",
+            click() {
+              win.webContents.send("return-menu", "__select all")
+            },
+            disabled: !params.editFlags.canSelectAll
+          }];
+          var menu = new Menu.buildFromTemplate(cmenu).popup(win)
+        }
+      })
+      webview.addEventListener("ipc-message", function(event) {
+        if (event.channel === "close-window") {
+          $window.hide("fade", 200, function() {
+            $window.remove();
+            $task.remove();
+          })
+        }
+        if (event.channel === "get-window-size") {
+          webview.send("get-window-size", {
+            width: $webview.width(),
+            height: $webview.height()
+          })
+        }
+        if (event.channel === "set-window-size") {
+          $window.width(event.args[0].width + 8);
+          $window.height(event.args[0].height + 36);
+        }
+        if (event.channel === "set-window-title") {
+          $window.find("window-title").text(event.args[0]);
+        }
+      });
+    })
+  </script>
+</body>

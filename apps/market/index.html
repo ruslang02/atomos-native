@@ -116,7 +116,7 @@
 				fs.ensureFileSync(tempFile);
 				let file = fs.createWriteStream(tempFile);
 				file.on('finish', function () {
-					window.new("install", {
+					new Window("install", {
 						path: tempFile
 					}, {modal: true, parent: win});
 				});
@@ -148,7 +148,7 @@
 				});
 				break;
 			case "startApp":
-				window.new(e.args[0]);
+				new Window(e.args[0]);
 				break;
 		}
 	}

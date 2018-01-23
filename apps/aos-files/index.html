@@ -1,5 +1,6 @@
 <script>
 	let args = require('atomos-framework').arguments;
+	let win = require('atomos-framework').window;
 	window.$ = require("jquery");
 	const {
 		remote,
@@ -12,7 +13,6 @@
 	const fs = require("fs-extra");
 	const path = require("path");
 
-	let win = remote.getCurrentWindow();
 
 	let $sidebar;
 	let $container;
@@ -79,7 +79,7 @@
 	ipcRenderer.on('changeWallpaper', updateWall);
 
 	$(function() {
-		if (args.desktop === true) {
+		if (win.id === 0) {
 			window.viewMode = "verylarge";
 			window.showHidden = true;
 			window.foldersFirst = true;
@@ -176,7 +176,7 @@
 								"data-type": (stat.isDirectory() ? "folder" : "file"),
 								dblclick: function() {
 									if (stat.isDirectory()) {
-										if (args.desktop === true) window.new("aos-files", {
+										if (args.desktop === true) new Window("aos-files", {
 											path: path.join(url, file)
 										});
 										else navigate(path.join(url, file));
@@ -433,7 +433,7 @@
 				html: $("<button></button>", {
 					class: "btn btn-outline-primary material-icons",
 					click: function() {
-						window.new("aos-cabinet/createFolder", {
+						new Window("aos-cabinet/createFolder", {
 							path: $pathField.val()
 						}, {
 							modal: true,
@@ -505,14 +505,14 @@
 			submenu: [{
 				label: "New Window",
 				click() {
-					window.new("aos-files", {
+					new Window("aos-files", {
 						path: $pathField.val()
 					})
 				}
 			}, {
 				label: "Terminal",
 				click() {
-					window.new("ash", {
+					new Window("ash", {
 						path: $pathField.val()
 					})
 				}
@@ -609,19 +609,18 @@
 			accelerator: "CmdOrCtrl+V",
 			click() {
 				window.fileClipboard.flush($pathField.val(), {
-					end:
-				})
-					.then(() => {
+					end: function() {
 						navigate(":refresh")
-					})
-					.catch(function(err) {
+					},
+					error: function(err) {
 						new Notification({
 							title: "We were unable to copy file",
 							html: err,
 							color: "#dc3545",
 							icon: "warning"
 						})
-					})
+					}
+				})
 			},
 			enabled: window.fileClipboard.isFilled
 		}, {
@@ -631,7 +630,7 @@
 			label: "Next wallpaper",
 			visible: args.desktop === true && aclock,
 			click() {
-				window.new("aclockwallpaper", {
+				new Window("aclockwallpaper", {
 					autostart: true
 				}, {
 					show: false,
@@ -647,7 +646,7 @@
 			submenu: [{
 				label: "File",
 				click() {
-					window.new("aos-cabinet/createFile", {
+					new Window("aos-cabinet/createFile", {
 						path: $pathField.val()
 					}, {
 						modal: true,
@@ -660,7 +659,7 @@
 			}, {
 				label: "Folder",
 				click() {
-					window.new("aos-cabinet/createFolder", {
+					new Window("aos-cabinet/createFolder", {
 						path: $pathField.val()
 					}, {
 						modal: true,
@@ -675,7 +674,7 @@
 			label: "Properties",
 			visible: args.desktop !== true,
 			click() {
-				window.new("properties", {
+				new Window("properties", {
 					path: $pathField.val()
 				})
 			}
@@ -683,7 +682,7 @@
 			label: "Desktop Preferences",
 			visible: args.desktop === true,
 			click() {
-				window.new("control", {
+				new Window("control", {
 					section: "Desktop Preferences"
 				})
 			}
@@ -704,7 +703,7 @@
 			label: "Open in...",
 			visible: !($this.data("type") === "folder"),
 			click() {
-				window.new("aos-appchooserdialog", {
+				new Window("aos-appchooserdialog", {
 					path: file,
 					extension: path.extname(file).substring(1)
 				})
@@ -716,7 +715,7 @@
 			label: 'Install',
 			visible: file.endsWith(".wapp"),
 			click() {
-				window.new("install", {
+				new Window("install", {
 					path: file
 				});
 			}
@@ -724,7 +723,7 @@
 			label: 'Extract to...',
 			visible: file.endsWith(".zip") || file.endsWith(".tar.gz") || file.endsWith(".tgz"),
 			click() {
-				window.new("aos-files", {
+				new Window("aos-files", {
 					path: $pathField.val(),
 					action: "folder",
 					title: "Choose extraction directory...",
@@ -779,7 +778,7 @@
 			label: "Properties",
 			accelerator: "Alt+Enter",
 			click() {
-				window.new("properties", {
+				new Window("properties", {
 					path: file
 				})
 			}
@@ -791,7 +790,7 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-		transition: background ease 2.5s;
+		transition: background-image ease 2.5s;
 	}
 
 	body.desktop .dropdown-item:focus,

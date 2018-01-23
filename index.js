@@ -1,23 +1,22 @@
 const {
 	BrowserWindow,
-	app
+	app,
+	ipcMain
 } = require('electron');
 const fs = require("fs");
-/* System Components IDs
- * 1 - Desktop
- * 2 - Taskbar
- * 3 - Notifications
-*/
 global.clipboards = {
 	file: []
 };
 
-if(fs.existsSync("/etc/os-release"))
-	if(fs.readFileSync("/etc/os-release").indexOf("atomos") !== -1)
-		require("child_process").exec("xfwm4");
+global.winStorage = {
+	args: [],
+	icons: []
+}
+
+ipcMain.on("set-arguments", function(e, opts) {
+	global.winStorage.args.push(opts);
+})
 let win;
-let taskbar;
-let notification;
 
 app.on('ready', function () {
 	const {
@@ -42,12 +41,9 @@ app.on('ready', function () {
 		backgroundColor: '#bbd8e8',
 		webPreferences: {
 			nativeWindowOpen: true
-		},
-		arguments: {
-			desktop: true
 		}
 	});
-	win.loadURL("file://" + __dirname + "/apps/aos-files/index.html");
+	win.loadURL("file://" + __dirname + "/sys/init/index.html");
 	win.on("beforeunload", function () {
 		return false;
 	});
@@ -57,24 +53,10 @@ app.on('ready', function () {
 	win.webContents.on('will-navigate', ev => {
 		ev.preventDefault()
 	});
+	win.toggleDevTools();
 	win.show();
 	win.setSize(width, height);
-	taskbar = new BrowserWindow({
-		x: x,
-		y: y + height - 46,
-		width: width,
-		height: 47,
-		frame: false,
-		closable: false,
-		minimizable: false,
-		maximizable: false,
-		resizable: false,
-		movable: false,
-		skipTaskbar: true,
-		alwaysOnTop: true,
-		type: "dock"
-	});
-	taskbar.webContents.on('did-finish-load', function () {
+	/*taskbar.webContents.on('did-finish-load', function () {
 		fs.readFile(app.getPath("appData") + "/autostart.json", function (err, autostart) {
 			if(err || !autostart) {
 				console.error(err);
@@ -97,33 +79,5 @@ app.on('ready', function () {
 				service.loadURL("file:///" + app.getAppPath() + "/apps/" + item.app + "/index.html");
 			})
 		})
-	});
-	taskbar.loadURL("file://" + __dirname + "/sys/taskbar/index.html");
-	taskbar.show();
-	taskbar.webContents.on('will-navigate', ev => {
-		ev.preventDefault()
-	});
-
-	notification = new BrowserWindow({
-		x: x + width - 10 - 350,
-		y: y + height - 37 - 150,
-		width: 450,
-		height: 450,
-		frame: false,
-		closable: false,
-		minimizable: false,
-		maximizable: false,
-		alwaysOnTop: true,
-		resizable: false,
-		skipTaskbar: true,
-		movable: false,
-		show: false,
-		type: "notification"
-	});
-	notification.webContents.on('will-navigate', ev => {
-		ev.preventDefault()
-	});
-	notification.loadURL("file://" + __dirname + "/sys/notification/index.html");
-	if (process.argv.indexOf("--debug-taskbar") !== -1)
-		taskbar.toggleDevTools();
+	});*/
 });

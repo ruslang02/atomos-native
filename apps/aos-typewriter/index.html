@@ -5,7 +5,7 @@
       <b class="caret"></b>
     </button>
     <div class="dropdown-menu" aria-labelledby="fileMenu">
-      <button class="dropdown-item" data-key="Ctrl+Shift+N" data-description="Opens new Text Editor window" onclick="window.new('aos-typewriter')">New Window</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+N" data-description="Opens new Text Editor window" onclick="new Window('aos-typewriter')">New Window</button>
       <div class="dropdown-divider"></div>
       <button class="dropdown-item" data-key="Ctrl+O" data-description="Opens a file from file system">Open...</button>
       <div class="dropdown-divider"></div>
@@ -95,7 +95,7 @@
 
   window.onload = function() {
     $(window).keypress(function(event) {
-      if (event.ctrlKey && event.shiftKey && event.key === "N") window.new('aos-typewriter');
+      if (event.ctrlKey && event.shiftKey && event.key === "N") new Window('aos-typewriter');
       if (event.ctrlKey && event.key === "o") $("[data-key='Ctrl+O']").click();
       if (event.ctrlKey && event.key === "s") $("[data-key='Ctrl+S']").click();
       if (event.ctrlKey && event.shiftKey && event.key === "S") $("[data-key='Ctrl+Shift+S']").click();
@@ -156,7 +156,7 @@
           document.execCommand("selectAll", false, null);
           break;
         case 'Ctrl+O':
-          window.new("aos-files", {
+          new Window("aos-files", {
             action: "open",
             path: app.getPath("documents"),
             title: "Choose a text file to open..."
@@ -166,7 +166,7 @@
           });
           break;
         case 'Ctrl+Shift+S':
-	        window.new("aos-files", {
+	        new Window("aos-files", {
 		        action: "save",
             path: app.getPath("documents"),
             title: "Choose the location to save the file"
@@ -186,7 +186,7 @@
   function save(path) {
     let contents = $("textarea").val();
     if (!path && !fileName)
-	    window.new("aos-files", {
+	    new Window("aos-files", {
 		    action: "save",
         path: app.getPath("documents"),
         title: "Choose the location to save the file"
@@ -214,7 +214,7 @@
           else new Notification({
             title: "File was successfully saved",
             body: 'It is located here: ' + path +
-              '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-files\',{path: \'' + path.substring(0, path.lastIndexOf(
+              '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="new Window(\'aos-files\',{path: \'' + path.substring(0, path.lastIndexOf(
                 "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>',
             icon: "done",
             color: "#28a745"
@@ -229,7 +229,7 @@
     win.setTitle(path.substring(path.lastIndexOf("/") + 1) + " - Typewriter");
     fs.stat(path, function(err, stat) {
       if (stat.size > MAX_SIZE && !loadAnyway) {
-        window.new("aos-typewriter/toolargefile", {}, {
+        new Window("aos-typewriter/toolargefile", {}, {
           modal: true,
           parent: win
         });

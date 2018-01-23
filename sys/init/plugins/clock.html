@@ -1,52 +1,33 @@
+<clock-menu class="bg-light border border-dark card" style=" display: none;">
+	<div class="card-body text-right float-right">
+		<h1 class="display-3" name="clock">21:39<br></h1>
+		<h4 name="date">21 September 2017</h4></div>
+	<div class="list-group list-group-flush">
+		<div class="list-group-item d-flex">
+			<i class="material-icons md-18">volume_down</i>
+			<input title class="form-control" oninput="changeVolume(this)" type="range">
+			<i class="material-icons md-18">volume_up</i>
+		</div>
+		<button type="button" class="list-group-item list-group-item-action" onclick="new Window('control')">Settings
+		</button>
+	</div>
+</clock-menu>
 <script>
 	$("tray").append("<button name=\"clock\" style='color: #343a40' data-toggle=\"tooltip\" data-placement=\"left\" data-trigger='hover' title='Date loading...'></button>");
 	fs.readJson(app.getPath("appData") + "/taskbar.json")
 			.then(function(data) {
-				if(data.clockPopup === undefined) {
-					fs.writeJson(app.getPath("appData") + "/taskbar.json", Object.assign(data, {clockPopup: true}))
-				}
-
-				if(data.clockPopup === true) {
-					let clockMenu;
-					clockMenu = new BrowserWindow({
-						width: 400,
-						height: 258,
-						type: "notification",
-						frame: false,
-						closable: false,
-						maximizable: false,
-						showOnLoad: false,
-						minimizable: false,
-						skipTaskbar: true,
-						movable: false,
-						resizable: false,
-						x: x + width - 400 - 10,
-						y: y + height - 258 - 28 - 10,
-						show: false,
-						alwaysOnTop: true,
-					});
-					clockMenu.loadURL("file://" + app.getAppPath() + "/sys/clockMenu/index.html");
 					$("[name=clock]").on("click", function () {
-						if (clockMenu.isVisible()) {
-							clockMenu.hide();
+						$("clock-menu").toggle();
+						if ($("clock-menu").css("display") === "none") {
 							wc.send("deactivate-tray", {
 								win: 'clock'
 							})
 						} else {
-							clockMenu.show();
-							clockMenu.setAlwaysOnTop(true);
 							wc.send("activate-tray", {
 								win: 'clock'
 							})
 						}
 					});
-					clockMenu.on('blur', function () {
-						wc.send("deactivate-tray", {
-							win: 'clock'
-						});
-						clockMenu.hide()
-					});
-				}
 			});
 	$("[name=clock]").on("contextmenu", function (e) {
 		e.preventDefault();
@@ -54,19 +35,22 @@
 		Menu.buildFromTemplate([{
 			label: "Time/Date Settings",
 			click() {
-				window.new("control", {
+				new Window("control", {
 					section: "Date and Time"
 				})
 			}
 		}, {type: 'separator'}, {
 			label: "Taskbar Settings",
 			click() {
-				window.new("control", {
+				new Window("control", {
 					section: "Taskbar"
 				})
 			}
 		}]).popup();
 	});
+	function changeVolume(element) {
+		proc.spawn("amixer", ["sset", "Master", element.value + "%"]);
+	}
 	$(function () {
 		$('[data-toggle="tooltip"]').tooltip()
 	});
@@ -77,5 +61,6 @@
 			hour: '2-digit',
 			minute: '2-digit'
 		})).attr('data-original-title', new Date().toLocaleDateString());
+		$("[name=date]").text(new Date().toLocaleDateString({}, {day: '2-digit', month: 'long', year: 'numeric'}));
 	}
 </script>

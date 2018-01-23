@@ -7,12 +7,13 @@
 	<p><b>CodeName</b> <span data-name="codename"></span></p>
 	<p><b>Build</b> <span data-name="build"></span></p>
 	<p>Based on Ubuntu 16</p>
-	<button class="btn btn-sm btn-primary ml-2 float-right" onclick="window.close()">Close</button>
+	<button class="btn btn-sm btn-primary ml-2 float-right" onclick="win.close()">Close</button>
 </main>
 <style>
 	body {
 		padding: 1em;
-		display: flex;
+		display: inline-flex;
+		width: 100%;
 	}
 
 	p {
@@ -25,7 +26,7 @@
 </style>
 
 <script defer>
-	require('atomos-framework');
+	const win = require('atomos-framework').window;
 	const fs = require('fs-extra');
 	const {
 		remote
@@ -33,10 +34,11 @@
 	const {
 		app
 	} = remote;
-	const win = remote.getCurrentWindow();
 	window.onload = function() {
 		setTimeout(function() {
-			win.setContentSize(win.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+			win.getSize().then(function(size) {
+				win.setSize(size.width, Math.ceil(document.body.offsetHeight));
+			})
 		}, 100);
 	};
 

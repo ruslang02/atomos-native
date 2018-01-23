@@ -6,7 +6,7 @@
 			<b class="caret"></b>
 		</button>
 		<div class="dropdown-menu" aria-labelledby="fileMenu">
-			<button class="dropdown-item" data-key="Ctrl+N" onclick="window.new('brush')">New Window</button>
+			<button class="dropdown-item" data-key="Ctrl+N" onclick="new Window('brush')">New Window</button>
 			<div class="dropdown-divider"></div>
 			<button class="dropdown-item" data-key="Ctrl+O">Open...</button>
 			<div class="dropdown-divider"></div>
@@ -88,7 +88,7 @@
 		initCropper();
 		if (args.path) loadFile(args.path);
 		$("[data-key='Ctrl+O']").click(function () {
-			window.new("aos-files", {
+			new Window("aos-files", {
 				action: "open",
 				path: app.getPath("pictures"),
 				title: "Choose an image..."
@@ -201,7 +201,7 @@
 	}
 
 	function openSaveDialog() {
-		window.new("aos-files", {
+		new Window("aos-files", {
 			action: "save",
 			path: file.substring(0, file.lastIndexOf("/")) || app.getPath("pictures"),
 			title: "Choose save path..."

@@ -1,4 +1,5 @@
-<start-menu class="bg-light">
+<button type="button" class="btn btn-sm btn-primary" data-action="openStart">Start</button>
+<start-menu class="bg-light card border-dark border" style="left:0; display: none;">
 	<profile-section class="bg-light p-1">
 		<profile-name class="lead">atomOS</profile-name>
 		<atomos-version>
@@ -28,39 +29,39 @@
 	<div class="panel">
 		<div class="tab-content">
 			<div role="tabpanel" class="tab-pane active" id="folders">
-				<a href="#" onclick="window.new('aos-files',{path: app.getPath('documents')})"
+				<a href="#" onclick="new Window('aos-files',{path: app.getPath('documents')})"
 					 class="list-item btn btn-light">
 					<img data-icon="Documents Folder">
 					<name>Documents</name>
 					<br>
 					<description>Work with all your documents in one folder</description>
 				</a>
-				<a href="#" onclick="window.new('aos-files',{path: app.getPath('music')})" class="list-item btn btn-light">
+				<a href="#" onclick="new Window('aos-files',{path: app.getPath('music')})" class="list-item btn btn-light">
 					<img data-icon="Music Folder">
 					<name>Music</name>
 					<br>
 					<description>Listen to the music from one location</description>
 				</a>
-				<a href="#" onclick="window.new('aos-files',{path: app.getPath('pictures')})" class="list-item btn btn-light">
+				<a href="#" onclick="new Window('aos-files',{path: app.getPath('pictures')})" class="list-item btn btn-light">
 					<img data-icon="Pictures Folder">
 					<name>Pictures</name>
 					<br>
 					<description>View your photos here</description>
 				</a>
-				<a href="#" onclick="window.new('aos-files',{path: app.getPath('videos')})" class="list-item btn btn-light">
+				<a href="#" onclick="new Window('aos-files',{path: app.getPath('videos')})" class="list-item btn btn-light">
 					<img data-icon="Movies Folder">
 					<name>Videos</name>
 					<br>
 					<description>See all your movies available locally</description>
 				</a>
 				<hr/>
-				<a href="#" onclick="window.new('aos-files',{path: app.getPath('home')})" class="list-item btn btn-light">
+				<a href="#" onclick="new Window('aos-files',{path: app.getPath('home')})" class="list-item btn btn-light">
 					<img data-icon="User Folder">
 					<name>Home</name>
 					<br>
 					<description>All your storage lays here</description>
 				</a>
-				<a href="#" onclick="window.new('aos-files',{path: '/'})" class="list-item btn btn-light">
+				<a href="#" onclick="new Window('aos-files',{path: '/'})" class="list-item btn btn-light">
 					<img data-icon="Binder">
 					<name>Root</name>
 					<br>
@@ -78,13 +79,9 @@
 	</div>
 </start-menu>
 <script>
-	const app = require("electron").remote.app;
-	window.$ = window.jQuery = require("jquery");
-	$("body").append("<link href=\"" + app.getAppPath() + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
-	window.Popper = require("popper.js");
-	require("bootstrap");
-	require("atomos-framework");
-	const atomos = require("./index");
+  $("[data-action=openStart]").click(function() {
+    $("start-menu").toggle()
+  })
 	$(function () {
 		$('[data-toggle="tooltip"]').tooltip({
 			trigger: 'hover',
@@ -95,4 +92,50 @@
 			delay: 500
 		})
 	})
+  listApps();
+  fs.watch(app.getAppPath() + "/apps", function () {
+  	listApps();
+  });
+
+  function listApps(path = app.getAppPath() + "/apps") {
+  	$("#applications").html("");
+  	fs.readdir(path, function (err, dir) {
+  		dir.forEach(function (item) {
+  			if (item.toLowerCase() === "app.json") {
+  				fs.readJson(path + "/app.json", function (err, ap) {
+  					if (!ap.hidden)
+  						$("#applications").append('<a href="#" onclick="new Window(\'' +
+  								path.substring(path.lastIndexOf("/") + 1) + '\')" class="list-item btn btn-light"><img src="' +
+  								ap.icon.replace("$SYSTEM_ROOT", app.getAppPath()) + '"><name>' + ap.shortName + '</name><br><description>' + ap.description + '</description></a>');
+  				});
+  				let list = $("#applications").find(".list-item").get();
+  				list.sort(function (a, b) {
+  					return $(a).find("name").text().toUpperCase().localeCompare($(b).find("name").text().toUpperCase());
+  				});
+  				$.each(list, function (idx, itm) {
+  					$("#applications").append(itm);
+  				});
+  			} else if (fs.statSync(path + "/" + item).isDirectory()) {
+  				listApps(path + "/" + item);
+  			}
+  		})
+  	})
+
+  }
+
+  window.shutdown = function () {
+  	proc.exec("poweroff")
+  };
+  window.reboot = function () {
+  	proc.exec("reboot")
+  };
+  window.stopx = function () {
+  	proc.exec("killall xinit electron node");
+  };
+  window.suspend = function () {
+  	proc.exec("systemctl suspend");
+  };
+  window.lock = function () {
+  	proc.exec("dm-tool lock");
+  };
 </script>
