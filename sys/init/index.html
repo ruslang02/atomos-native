@@ -1,7 +1,7 @@
 <body>
   <link rel="stylesheet" href="index.css" />
-  <webview nodeintegration src="../../apps/aos-cabinet/index.html"></webview>
-  <nav-bar class="navbar navbar-expand-xs navbar-light bg-light navbar navbar-default fixed-bottom dropup"></nav-bar>
+  <webview id="desktop" nodeintegration></webview>
+  <nav-bar class="navbar navbar-expand-xs navbar-light bg-light navbar navbar-default dropup" style="z-index:1001;"></nav-bar>
   <script>
     const fs = require('fs-extra');
     const {
@@ -24,8 +24,10 @@
     const win = remote.getCurrentWindow();
     const wc = remote.getCurrentWebContents();
     window.jQuery = window.$ = require("jquery");
-    $.getScript(app.getAppPath() + "/node_modules/jquery-ui-npm/jquery-ui.min.js");
-    require('bootstrap');
+    $.getScript(app.getAppPath() + "/node_modules/jquery-ui-npm/jquery-ui.min.js", function() {
+      $.widget.bridge('uitooltip', $.ui.tooltip);
+      require('bootstrap');
+    });
     $("nav-bar").contextmenu(function(e) {
       e.preventDefault();
       Menu.buildFromTemplate([{
@@ -37,6 +39,21 @@
         }
       }]).popup(win)
     });
+    $(function() {
+      $("#desktop")[0].addEventListener("did-start-loading", function() {
+        ipcRenderer.send("set-arguments", {
+          id: $("#desktop")[0].getWebContents().id,
+          args: {
+            desktop: true
+          }
+        });
+      });
+      $("#desktop")[0].src = "file://" + app.getAppPath() + "/apps/aos-files/index.html";
+      $("#desktop").click(function() {
+        $("window").removeClass("active");
+        $("tasks button").removeClass("active");
+      })
+    })
     require("atomos-framework");
     require("./index");
     ipcRenderer.on("new-window", function(event, args) {
@@ -52,7 +69,33 @@
         class: 'material-icons',
         text: 'expand_less',
         click: function() {
-
+          if ($window.attr('data-state') === "maximized") {
+            $window.css({
+              top: $window.data('top'),
+              left: $window.data('left'),
+              width: $window.data('width'),
+              height: $window.data('height'),
+              padding: "0.25rem",
+              paddingTop: 0,
+              borderRadius: "0.25rem"
+            })
+            setTimeout(function() {
+              $window.attr('data-state', 'normal');
+            }, 500);
+          } else {
+            $window.attr('data-state', 'maximized')
+              .data('left', $window.css('left'))
+              .data('top', $window.css('top'))
+              .data('width', $window.css('width'))
+              .data('height', $window.css('height')).css({
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: $("html").height() - 48 + "px",
+                padding: 0,
+                borderRadius: 0
+              })
+          }
         }
       }));
       if (args.options.closable) winButtons.push($("<button></button>", {
@@ -72,10 +115,10 @@
       let webview = $webview[0];
       let $window = $("<window></window>", {
         css: {
-          width: args.options.width,
-          height: args.options.height,
-          minWidth: args.options.minWidth,
-          minHeight: args.options.minHeight,
+          width: args.options.width + 8,
+          height: args.options.height + 39,
+          minWidth: args.options.minWidth + 8,
+          minHeight: args.options.minHeight + 39,
           visibility: "hidden"
         },
         html: [
@@ -129,33 +172,24 @@
       let loaded = false;
       if (args.options.movable) $window.draggable({
         cancel: "webview, button",
-        start: function() {
-          $("window").removeClass("active");
-          $window.addClass("active");
-        },
-        stop: function() {
-          $("window").removeClass("active");
-          $window.addClass("active");
-        }
+        snap: "#desktop",
+        containment: "#desktop",
+        cursor: "move",
+        handle: "window-title",
+        start: activate,
+        stop: activate
       });
       if (args.options.resizable) $window.resizable({
         handles: "s,sw,se,e,w,n,nw,ne",
-        start: function() {
-          $window.css("z-index", (parseInt($("window.active").css("z-index")) || 1) + 1);
-          $("window").removeClass("active");
-          $window.addClass("active");
-        },
-        stop: function() {
-          $window.css("z-index", (parseInt($("window.active").css("z-index")) || 1) + 1);
-          $("window").removeClass("active");
-          $window.addClass("active");
-        }
+        animate: true,
+        containment: "#desktop",
+        helper: "resizable-helper",
+        animateEasing: "easeInOutBack",
+        animateDuration: 200,
+        start: activate,
+        stop: activate
       });
-      $window.mousedown(function() {
-        $window.css("z-index", (parseInt($("window.active").css("z-index")) || 1) + 1);
-        $("window").removeClass("active");
-        $window.addClass("active");
-      })
+      $window.mousedown(activate);
       if (args.options.showOnLoad) {
         webview.addEventListener("did-stop-loading", function() {
           if (!loaded) {
@@ -250,6 +284,15 @@
           var menu = new Menu.buildFromTemplate(cmenu).popup(win)
         }
       })
+
+      function activate() {
+        $window.css("z-index", (parseInt($("window.active").css("z-index")) || 1) + 1);
+        $("window").removeClass("active");
+        $("tasks button").removeClass("active");
+        $window.addClass("active");
+        $task.addClass("active");
+      }
+      activate();
       webview.addEventListener("ipc-message", function(event) {
         if (event.channel === "close-window") {
           $window.hide("fade", 200, function() {
@@ -264,8 +307,22 @@
           })
         }
         if (event.channel === "set-window-size") {
+          console.log(event.args[0].height + 39);
           $window.width(event.args[0].width + 8);
-          $window.height(event.args[0].height + 36);
+          $window.height(event.args[0].height + 39);
+        }
+        if (event.channel === "set-minimum-window-size") {
+          $window.css({
+            minWidth: event.args[0].width + "px",
+            minHeight: event.args[0].height + "px"
+          });
+        }
+        if (event.channel === "set-window-maximizable") {
+          if(event.args[0] === true)
+          $window.find("window-buttons button:contains(expand_less)").remove();
+        }
+        if (event.channel === "set-window-resizable") {
+          $window.find("window-buttons button:contains(expand_less)").remove();
         }
         if (event.channel === "set-window-title") {
           $window.find("window-title").text(event.args[0]);

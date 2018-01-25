@@ -79,7 +79,7 @@
 	ipcRenderer.on('changeWallpaper', updateWall);
 
 	$(function() {
-		if (win.id === 0) {
+		if (args.desktop === true) {
 			window.viewMode = "verylarge";
 			window.showHidden = true;
 			window.foldersFirst = true;

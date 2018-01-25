@@ -1,8 +1,7 @@
 <content class="p-2 d-flex flex-column h-100">
 	<header class="d-flex">
-		<img class="mr-2" data-icon="Ask Question"/>
-		<div>We do not know how to open file with extension "<span id="ext"></span>". Please specify an app that could open
-			it:
+		<img class="mr-2" data-icon="Ask Question" />
+		<div>We do not know how to open file with extension "<span id="ext"></span>". Please specify an app that could open it:
 		</div>
 	</header>
 
@@ -35,73 +34,63 @@
 
 <script>
 	let args = require('atomos-framework').arguments;
+	let win = require('atomos-framework').window;
 	let path = require("path");
 	const {
-		remote
-	} = require('electron');
-	const {
 		app
-	} = remote;
+	} = require("electron").remote;
 	const fs = require('fs-extra');
 	window.$ = require('jquery');
-	let win = remote.getCurrentWindow();
 	if (!args.path) {
 		ErrorProcessor("To open application, you need to specify file's path.");
 		win.close();
 	}
-	fs.readJson(app.getPath("appData") + "/associations.json", "utf-8", function (err, assocs) {
-		if (err) {
-			ErrorProcessor(err);
-			return;
-		}
-		let recom = "";
-		assocs.forEach(function (assoc) {
-			if (assoc.mime === path.extname(args.path).substring(1)) recom = assoc.app;
-		});
-
-
-		listApps();
-		$("#ext").text(path.extname(args.path).substring(1));
-		$(".btn-primary").click(function () {
-			let fass = assocs.find(o => o.ext === $("#ext").text());
-			if (fass) assocs[assocs.indexOf(fass)].app = $("select").val();
-			else assocs.push({
-				mime: $("#mime").text(),
-				app: $("select").val()
+	fs.readJson(app.getPath("appData") + "/associations.json", "utf-8")
+		.then(function(assocs) {
+			let recom = "";
+			assocs.forEach(function(assoc) {
+				if (assoc.mime === path.extname(args.path).substring(1)) recom = assoc.app;
 			});
-
-			new Window($("select").val(), {
-				path: path
-			}).then(window.close, console.error)
-
-			if(path.extname(args.path).substring(1).trim() !== "") fs.writeJson(app.getPath("appData") + "/associations.json", assocs, function (err) {
-				if (err)
-					ErrorProcessor(err);
-				else new Notification({
-					title: "New association added",
-					body: "The next time you open files like this, you won't get that dialog again.",
-					icon: "done",
-					color: "#28a745"
+			listApps();
+			$("#ext").text(path.extname(args.path).substring(1));
+			$(".btn-primary").click(function() {
+				let fass = assocs.find(o => o.ext === $("#ext").text());
+				if (fass) assocs[assocs.indexOf(fass)].app = $("select").val();
+				else assocs.push({
+					mime: $("#mime").text(),
+					app: $("select").val()
 				});
-			});
-		})
-	});
 
+				new Window($("select").val(), {
+					path: path
+				}).then(win.close, console.error)
+
+				if (path.extname(args.path).substring(1).trim() !== "") fs.writeJson(app.getPath("appData") + "/associations.json", assocs)
+					.then(function() {
+						new Notification({
+							title: "New association added",
+							body: "The next time you open files like this, you won't get that dialog again.",
+							icon: "done",
+							color: "#28a745"
+						});
+					}, ErrorProcessor)
+			})
+		}, ErrorProcessor);
 
 	function listApps(path = app.getAppPath() + "/apps") {
-		fs.readdir(path, function (err, dir) {
-			dir.forEach(function (item) {
+		fs.readdir(path, function(err, dir) {
+			dir.forEach(function(item) {
 				if (item.toLowerCase() === "app.json") {
-					fs.readJson(path + "/app.json", function (err, app) {
+					fs.readJson(path + "/app.json", function(err, app) {
 						if (!app.hidden)
 							$("select").append('<option value="' +
-									path.substring(path.lastIndexOf("/") + 1) + '">' + app.shortName + '</option>');
+								path.substring(path.lastIndexOf("/") + 1) + '">' + app.shortName + '</option>');
 					});
 					let list = $("option").get();
-					list.sort(function (a, b) {
+					list.sort(function(a, b) {
 						return $(a).text().toUpperCase().localeCompare($(b).text().toUpperCase());
 					});
-					$.each(list, function (idx, itm) {
+					$.each(list, function(idx, itm) {
 						$("select").append(itm);
 					});
 				} else if (fs.statSync(path + "/" + item).isDirectory()) {
@@ -109,13 +98,11 @@
 				}
 			})
 		});
-
 		$("select").on("input", function() {
-			if($(this).val().trim())
+			if ($(this).val().trim())
 				$(".btn-primary").removeAttr("disabled");
-			else $(".btn-primary").attr("disabled","disabled");
+			else $(".btn-primary").attr("disabled", "disabled");
 		});
-
 	}
 
 	function ErrorProcessor(err) {
