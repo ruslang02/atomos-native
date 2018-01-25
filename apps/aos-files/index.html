@@ -27,66 +27,12 @@
 		items: []
 	};
 
-	function updateWall() {
-		fs.readJson(app.getPath("appData") + "/aos-cabinet.json", function(err, settings) {
-			if (err) {
-				fs.writeJsonSync(app.getPath("appData") + "/aos-cabinet.json", fs.readJsonSync(
-					__dirname + "/default.json"));
-				settings = fs.readJsonSync(__dirname + "/default.json");
-			}
-			let wpURL;
-			if (fs.existsSync(app.getPath("appData") + "/wallpaper.jpg"))
-				wpURL = encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg?time=" + new Date().getTime();
-			else {
-				wpURL = encodeURI(app.getAppPath()).replace(/%5C/g, "/") + "/resources/default.jpg?time=" + new Date().getTime();
-				fs.copy(app.getAppPath() + "/resources/default.jpg", app.getPath("appData") + "/wallpaper.jpg")
-					.then(function() {
-						new Notification({
-							title: "Welcome to AtomOS!",
-							body: "We are very glad to see you here, you have made a long way to seeing this screen, congratulations! :-)",
-							color: "#fd7e14",
-							icon: "pan_tool"
-						});
-						let d1e = fs.existsSync(app.getPath("desktop") + "/.1.lnk");
-						let d2e = fs.existsSync(app.getPath("desktop") + "/.2.lnk");
-						if (!d1e) fs.writeJson(app.getPath("desktop") + "/.1.lnk", {
-							title: "Home",
-							app: "aos-files",
-							args: {
-								path: app.getPath("home")
-							},
-							icon: app.getAppPath() + "/icons/User Folder.png"
-						});
-						if (!d2e) fs.writeJson(app.getPath("desktop") + "/.2.lnk", {
-							title: "Computer",
-							app: "aos-files",
-							args: {
-								path: "/"
-							},
-							icon: app.getAppPath() + "/icons/Computer.png"
-						})
-					})
-			}
-			$("body").css({
-				"background-image": "url(file:///" + wpURL + ")",
-				"background-size": (settings.fillMode === "fill" ? "cover" : (settings.fillMode === "stretch" ? "100% 100%" : "initial")),
-				"background-position": (settings.fillMode === "center" ? "center" : "top left"),
-				"background-repeat": (settings.fillMode === "tiled" ? "repeat" : "no-repeat")
-			});
-		})
-	}
-
-	ipcRenderer.on('changeWallpaper', updateWall);
-
 	$(function() {
 		if (args.desktop === true) {
 			window.viewMode = "verylarge";
 			window.showHidden = true;
 			window.foldersFirst = true;
-			updateWall();
 			window.sorting = "A-Z";
-			fs.watch(app.getPath("appData") + "/wallpaper.jpg", updateWall);
-			fs.watch(app.getPath("appData") + "/aos-cabinet.json", updateWall);
 			$("body").addClass("desktop");
 		} else {
 			window.onbeforeunload = function(e) {
@@ -790,8 +736,8 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-		transition: background-image ease 2.5s;
 	}
+	body.desktop {background: none}
 
 	body.desktop .dropdown-item:focus,
 	body.desktop .dropdown-item:hover {

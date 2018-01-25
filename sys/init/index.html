@@ -23,11 +23,34 @@
     } = screen.getPrimaryDisplay().bounds;
     const win = remote.getCurrentWindow();
     const wc = remote.getCurrentWebContents();
+    let settings;
     window.jQuery = window.$ = require("jquery");
     $.getScript(app.getAppPath() + "/node_modules/jquery-ui-npm/jquery-ui.min.js", function() {
       $.widget.bridge('uitooltip', $.ui.tooltip);
       require('bootstrap');
     });
+    fs.readJSON(app.getPath("appData") + "/system.json", function(err, sets) {
+      if (err) {
+        sets = {
+          graphicalPreset: "high",
+          animationPreset: "high",
+          taskbar: {
+            items: ["startButton", "tasks", "tray", "clock"],
+            startButton: "text",
+            clockPopup: true
+          },
+          desktop: {
+            fillMode: "fill",
+            background: ""
+          }
+        }
+        fs.writeJSON(app.getPath("appData") + "/system.json", sets);
+      }
+      settings = sets;
+      updateWall();
+      $("body").attr("data-graphical-preset", sets.graphicalPreset);
+      $("body").attr("data-animation-preset", sets.animationPreset);
+    })
     $("nav-bar").contextmenu(function(e) {
       e.preventDefault();
       Menu.buildFromTemplate([{
@@ -49,7 +72,7 @@
         });
       });
       $("#desktop")[0].src = "file://" + app.getAppPath() + "/apps/aos-files/index.html";
-      $("#desktop").click(function() {
+      $("#desktop").mousedown(function() {
         $("window").removeClass("active");
         $("tasks button").removeClass("active");
       })
@@ -168,7 +191,7 @@
       if (args.options.show) $window.css({
         visibility: "visible",
         display: "none"
-      }).show("fade", 200);
+      }).show(($("body").attr("data-animation-preset") !== "none" ? "fade" : ""), 200);
       let loaded = false;
       if (args.options.movable) $window.draggable({
         cancel: "webview, button",
@@ -181,9 +204,9 @@
       });
       if (args.options.resizable) $window.resizable({
         handles: "s,sw,se,e,w,n,nw,ne",
-        animate: true,
         containment: "#desktop",
         helper: "resizable-helper",
+        animate: $("body").attr("data-animation-preset") === "high",
         animateEasing: "easeInOutBack",
         animateDuration: 200,
         start: activate,
@@ -219,7 +242,7 @@
           args: args.arguments
         };
         ipcRenderer.send("set-arguments", setargs);
-      })
+      });
       webview.addEventListener('will-navigate', ev => {
         ev.preventDefault()
       });
@@ -300,6 +323,7 @@
             $task.remove();
           })
         }
+          if (event.channel === "change-wallpaper") updateWall();
         if (event.channel === "get-window-size") {
           webview.send("get-window-size", {
             width: $webview.width(),
@@ -318,8 +342,8 @@
           });
         }
         if (event.channel === "set-window-maximizable") {
-          if(event.args[0] === true)
-          $window.find("window-buttons button:contains(expand_less)").remove();
+          if (event.args[0] === true)
+            $window.find("window-buttons button:contains(expand_less)").remove();
         }
         if (event.channel === "set-window-resizable") {
           $window.find("window-buttons button:contains(expand_less)").remove();
@@ -329,5 +353,33 @@
         }
       });
     })
+
+    function updateWall() {
+      let wpURL;
+      if (fs.existsSync(app.getPath("appData") + "/wallpaper.jpg"))
+        wpURL = encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg?time=" + new Date().getTime();
+      else {
+        wpURL = encodeURI(app.getAppPath()).replace(/%5C/g, "/") + "/resources/default.jpg?time=" + new Date().getTime();
+        fs.copy(app.getAppPath() + "/resources/default.jpg", app.getPath("appData") + "/wallpaper.jpg")
+          .then(function() {
+            new Notification({
+              title: "Welcome to AtomOS!",
+              body: "We are very glad to see you here, you have made a long way to seeing this screen, congratulations! :-)",
+              color: "#fd7e14",
+              icon: "pan_tool"
+            });
+          })
+      }
+      $("body").css({
+        "background-image": "url(file:///" + wpURL + ")",
+        "background-size": (settings.desktop.fillMode === "fill" ? "cover" : (settings.desktop.fillMode === "stretch" ? "100% 100%" : "initial")),
+        "background-position": (settings.desktop.fillMode === "center" ? "center" : "top left"),
+        "background-repeat": (settings.desktop.fillMode === "tiled" ? "repeat" : "no-repeat")
+      });
+    }
+
+    fs.watch(app.getPath("appData") + "/wallpaper.jpg", updateWall);
+    fs.watch(app.getPath("appData") + "/aos-cabinet.json", updateWall);
+
   </script>
 </body>

@@ -5,6 +5,7 @@ tasks img {
 body {
 	display:flex;
 	flex-direction: column;
+	transition: background-image 2s ease;
 }
 
 body > webview {
@@ -30,23 +31,35 @@ body > webview {
 
 window {
 	position: fixed !important;
-	top:20em;
-	right:20em;
+	top:10em;
+	right:10em;
 	width:400px;
 	height:400px;
 	display:inline-flex;
 	flex-direction: column;
 	background: #007bff;
-	border-radius:0.25rem;
     padding: 0.25rem;
     padding-top: 0;
-		box-shadow: inset 0 0 0 1000000px rgba(255,255,255,0.2), 0px 0px 10px 2px rgba(0,0,0,0.5);
 }
-window[data-state=maximized] {
+body[data-graphical-preset=high] window {
+	border-radius:0.25rem;
+	box-shadow: inset 0 0 0 1000000px rgba(255,255,255,0.2), 0px 0px 10px 2px rgba(0,0,0,0.5);
+}
+body [data-graphical-preset=low] window {
+	border-radius:0.25rem;
+	box-shadow: inset 0 0 0 10000px rgba(255,255,255,0.2);
+}
+body [data-graphical-preset=low] window.active {
+	box-shadow: 0;
+}
+body[data-graphical-preset=high] window.active {
+	box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.8);
+}
+body[data-animation-preset=high] window[data-state=maximized] {
 	transition: all .2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
-window.active {
-	box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.8);
+body[data-animation-preset=low] window[data-state=maximized] {
+	transition: all .2s ease;
 }
 window webview {flex-grow:2; background: white}
 window window-header {
@@ -71,14 +84,18 @@ window window-buttons button {
 	padding:0.1rem 0.1rem;
 	margin-left:0.1rem;
 	border-radius:0.25rem;
-	transition: background .5s ease;
+}
+body[data-animation-preset=low] window window-buttons button,
+body[data-animation-preset=high] window window-buttons button {
+	transition: background .2s ease;
 }
 .resizable-helper {
 	background: rgba(0, 123, 255, 0.5);
 	border: rgb(0, 98, 204) 2px solid;
-	border-radius:0.25rem;
-	box-shadow: 0 0 20px -10px rgba(0,0,0,0.5);
 }
+body[data-graphical-preset=low] .resizable-helper,
+body[data-graphical-preset=high] .resizable-helper {border-radius:0.25rem;}
+body[data-graphical-preset=high] .resizable-helper {box-shadow: 0 0 20px -10px rgba(0,0,0,0.5);}
 window window-buttons button:hover {
 	background: rgba(255,255,255,0.3);
 }
