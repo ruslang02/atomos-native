@@ -1,4 +1,6 @@
-# atomOS Desktop Environment (native edition)
+# atomOS "Native"
+
+Version of AtomOS, that uses a single Electron instance and webview's to start apps. Half-compatible with AtomOS "awesome". Development paused due to poor performance on Orange Pi Win.
 
 ![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png)
 
@@ -8,16 +10,15 @@ Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.
 There is also an operating system available based on this.
 
-## Installation
+## Installation (for Linux)
 
-Download this repository and unpack it to `/atomos` or run this command:
+Download this repository and unpack it or run this command:
 ```
-sudo git clone https://github.com/ruslang02/atomos.git /atomos
+sudo git clone https://github.com/ruslang02/atomos.git <install_dir>
 ```
 
 Firstly, you should have Node.JS and NPM installed:
 ```
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 Then you need Electron to work:
@@ -26,12 +27,12 @@ sudo npm install -g electron --unsafe-perm=true --allow-root
 ```
 Install the libraries:
 ```
-npm install
+cd <install_dir>
 npm update
 ```
 And, finally, to run this monster:
 ```
-electron /atomos
+electron <install_dir>
 ```
 
 ## Changelog
