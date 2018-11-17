@@ -1,10 +1,11 @@
 # atomOS "Native"
 
-Version of AtomOS, that uses a single Electron instance and webview's to start apps. Half-compatible with AtomOS "awesome". Development paused due to poor performance on Orange Pi Win.
+Version of AtomOS, that uses a single Electron instance and webview's to start apps. Half-compatible with AtomOS "awesome". 
+AtomOS 0.7 partly implements features of Native version.
 
-![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png)
+![alt text](https://raw.githubusercontent.com/ruslang02/atomos-native/master/PREVIEW.png)
 
-Latest version: 0.6 (build 131). [Download 0.5 .iso](https://github.com/ruslang02/atomos/releases).
+Latest version: 0.6 (build 131). [Download 0.7 .iso](https://github.com/ruslang02/atomos/releases).
 
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.
